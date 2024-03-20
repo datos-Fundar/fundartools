@@ -11,7 +11,7 @@ setup(
        "Operating System :: OS Independent"
        "Programming Language :: Python",
    ],
-   python_requires='>=3.11',
+   python_requires='>=3.10',
    setup_requires=['setuptools-git-versioning'],
    version_config={
        "dirty_template": "{tag}",

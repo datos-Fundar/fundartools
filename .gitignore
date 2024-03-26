@@ -6,3 +6,5 @@ python/dist/
 python/env/
 python/*.egg-info/
 python/.eggs/*
+
+.vscode/

@@ -1,2 +1,2 @@
 python setup.py sdist bdist_wheel
-pip install ./dist/fundar*.whl
+pip install -e ./dist/fundar*.whl

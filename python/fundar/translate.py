@@ -39,9 +39,9 @@ def __call__(to_translate, to_language='auto', from_language='auto'):
     return __translate__(to_translate, to_language, from_language)
 
 def bulk(*strs, 
-                   input_lang='auto', 
-                   output_lang='auto', 
-                   delimiter=";\n") -> list[str]:
+        input_lang='auto', 
+        output_lang='auto', 
+        delimiter=";\n") -> list[str]:
     
     s = delimiter.join(strs)
     o = __translate__(s, to_language=input_lang, from_language=output_lang)

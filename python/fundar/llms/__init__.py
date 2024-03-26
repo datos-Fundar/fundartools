@@ -1,0 +1,2 @@
+from .cuda import are_torch_and_cuda_correctly_installed
+are_torch_and_cuda_correctly_installed()

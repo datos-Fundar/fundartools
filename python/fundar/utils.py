@@ -40,6 +40,67 @@ def callx(*args, **kwargs):
 
 # =============================================================================================
 
+class staticproperty(property):
+    """Utilidad para crear propiedades estáticas (que no tomen el puntero a self)"""
+
+    def __get__(self, cls, owner):
+        return staticmethod(self.fget).__get__(None, owner)()
+
+class Singleton(type):
+    """
+    Metaclase que implementa el patrón de singleton.
+    Las clases que la heredan no pueden ser instanciadas más de una vez.
+    Provee un método 'get_instance' que es heredado, el cual:
+    - Si la clase no está instanciada, la crea.
+    - Si está instanciada, la devuelve.
+    """
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            instance = super().__call__(*args, **kwargs)
+            cls._instances[cls] = instance
+            return instance
+
+        raise RuntimeError("Class already instantiated. Use get_instance()")
+
+    def get_instance(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            instance = super().__call__(*args, **kwargs)
+            cls._instances[cls] = instance
+        return cls._instances[cls]
+    
+# =============================================================================================
+
+_T_co = TypeVar('_T_co')
+_T = TypeVar('_T')
+
+class SupportsNext(Protocol[_T_co]):
+    def __next__(self) -> _T_co: ...
+
+
+class SupportsIter(Protocol[_T_co]):
+    def __iter__(self) -> _T_co: ...
+
+class Attribute(Generic[_T]): ...
+
+class Final(Generic[_T]):
+    """Indica que la variable no puede ser reasignada, pero si puede mutar."""
+
+
+class Mutable(Generic[_T]):
+    """Indica que la variable puede ser reasignada y mutar"""
+
+
+class Inmutable(Generic[_T]):
+    """Indica que la variable no puede ser reasignada ni mutar"""
+
+def getattrc(attr: str):
+    """Versión currificada de 'getattr'"""
+    return lambda obj: getattr(obj, attr)
+
+# =============================================================================================
+
 Integer = TypeVar('Integer', int, int)
 Float = TypeVar('Float', float, float)
 Number = TypeVar('Number', int, float)
@@ -109,3 +170,78 @@ def apply(f):
         
         return (args, kwargs, f(*args, **kwargs))
     return apply_to
+
+# =============================================================================================
+
+from typing import Iterable, Union, Type, Dict
+
+def text_wrap(s: str, max_length=100) -> str:
+    if len(s) >= max_length:
+        return s[:max_length]+'\n'+text_wrap(s[max_length:], max_length)
+    return s
+
+def is_subscrevable(x: object|type) -> bool: # Raises Exception^AttributeError
+    if not isinstance(x, type):
+        return is_subscrevable(type(x))
+    try:
+        x.__getitem__
+        return True
+    except Exception as e:
+        match e:
+            case AttributeError():
+                return False
+            case _:
+                raise e
+
+def internal_type_of_iterable(s: Iterable) -> type|Union[type]:
+    missing_first = object()
+    iterator = iter(s)
+    first_element = next(iterator, missing_first)
+    
+    if first_element is missing_first:
+        raise ValueError('Empty iterable')
+
+    internal_type = type(first_element)
+    for t in map(type, iterator):
+        internal_type |= t
+
+    return internal_type
+
+def _typeof_iterable(s: Iterable) -> tuple[Type[Iterable], type|Union[type]]:
+    base_type = type(s)
+    internal_type = internal_type_of_iterable(s)
+    
+    if not is_subscrevable(base_type):
+        print(base_type)
+        return None
+    return base_type, internal_type
+
+def typeof_iterable(s: Iterable) -> Type[Type]:
+    base_type, internal_type = _typeof_iterable(s)
+    return base_type[internal_type]
+
+def _typeof_dict(d: dict) -> tuple[Type[dict], type|Union[type]]:
+    keys = internal_type_of_iterable(d.keys())
+    values = internal_type_of_iterable(d.values())
+    return keys, values
+
+def typeof_dict(d: dict) -> Type[Dict[type|Union[type], type|Union[type]]]:
+    keys, values = _typeof_dict(d)
+    return dict[keys, values]
+
+def isiterable(s: object) -> bool:
+    try:
+        iter(s)
+        return True
+    except TypeError:
+        return False
+
+def split(condition):
+    def _split(xs):
+        successful, failed = [], []
+        for x in xs:
+            (successful if condition(x) else failed).append(x)
+        return successful, failed
+    return _split
+
+# =============================================================================================

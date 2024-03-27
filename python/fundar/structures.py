@@ -86,6 +86,18 @@ class List(list):
             error_str += 's' if non_callables > 1 else ''
             error_str += ' in the list.'
             raise TypeError(error_str)
+        
+    def unique(self):
+        """
+        Devuelve una lista con los elementos únicos de la lista original.
+        """
+        return List(set(self))
+    
+    def nunique(self):
+        """
+        Devuelve el número de elementos únicos en la lista.
+        """
+        return len(self.unique())
     
     @wraps(list.sort)
     def sort(self, **kwargs):

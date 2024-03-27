@@ -32,6 +32,15 @@ class List(list):
             return List(result)
         return result
     
+    def safe_index(self, x, default=-1):
+        """
+        Devuelve el índice de x si está en la lista, o -1 en caso contrario.
+        """
+        try:
+            return self.index(x)
+        except ValueError:
+            return default
+    
     def zip(self, *args):
         """
         Versión eager de zip.

@@ -1,7 +1,7 @@
 import io
 import os
 from operator import contains
-from functools import reduce
+from functools import reduce, partial
 from typing import NewType, Callable, TypeVar, Protocol, Generic
 
 # =============================================================================================
@@ -38,6 +38,30 @@ def call(f, *args, **kwargs):
 def callx(*args, **kwargs):
     return lambda f: call(f, *args, **kwargs)
 
+def access(i):
+    return lambda x: x[i]
+
+fst = access(0)
+snd = access(1)
+
+def _apply_to(f,i,x):
+    if i == 0:
+        return type(x)(f(x[0]), *x[1:])
+    if i == len(x)-1:
+        return type(x)((*x[:-1], f(x[-1])))
+    else:
+        return type(x)(*x[:i], f(x[i]), *x[i+1:])
+
+def apply_to(f, i):
+    """
+    Applies a function to the ith element of an indexable object.
+    Leaves the rest just as is.
+    """
+    return lambda x: _apply_to(f, i, x)
+
+first = partial(apply_to, i=0)
+second = partial(apply_to, i=1)
+    
 # =============================================================================================
 
 class staticproperty(property):

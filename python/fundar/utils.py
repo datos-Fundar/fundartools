@@ -41,16 +41,20 @@ def callx(*args, **kwargs):
 def access(i):
     return lambda x: x[i]
 
+# https://hackage.haskell.org/package/base-4.19.1.0/docs/Prelude.html#v:fst
 fst = access(0)
+
+# https://hackage.haskell.org/package/base-4.19.1.0/docs/Prelude.html#v:snd
 snd = access(1)
 
-def _apply_to(f,i,x):
-    if i == 0:
-        return type(x)(f(x[0]), *x[1:])
-    if i == len(x)-1:
-        return type(x)((*x[:-1], f(x[-1])))
-    else:
-        return type(x)(*x[:i], f(x[i]), *x[i+1:])
+def identity_single_argument(x):
+    return x
+
+def apply_to(f, x, i):
+    M = [identity_single_argument for _ in x]
+    M[i] = f
+
+    return type(x)(M[j](x[j]) for j in range(len(x)))
 
 def apply_to(f, i):
     """
@@ -59,7 +63,10 @@ def apply_to(f, i):
     """
     return lambda x: _apply_to(f, i, x)
 
+# https://hackage.haskell.org/package/base-4.19.1.0/docs/Control-Arrow.html#v:first
 first = partial(apply_to, i=0)
+
+# https://hackage.haskell.org/package/base-4.19.1.0/docs/Control-Arrow.html#v:second
 second = partial(apply_to, i=1)
     
 # =============================================================================================

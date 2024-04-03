@@ -50,11 +50,11 @@ snd = access(1)
 def identity_single_argument(x):
     return x
 
-def apply_to(f, x, i):
-    M = [identity_single_argument for _ in x]
-    M[i] = f
+def identity(*args):
+    return args
 
-    return type(x)(M[j](x[j]) for j in range(len(x)))
+def _apply_to(f, i, x):
+    return type(x)(f(y) if (j == i) else y for j,y in enumerate(x))
 
 def apply_to(f, i):
     """
@@ -275,4 +275,29 @@ def split(condition):
         return successful, failed
     return _split
 
+from inspect import signature
+
+def argumentsOf(f): return len(signature(f).parameters)
+
+def curry(f: callable):
+    def curried(*args):
+        if len(args) == argumentsOf(f): return f(*args)
+        else: return lambda x: curried(x, *args)
+    return curried
+
 # =============================================================================================
+
+class Negate(object):
+    def __matmul__(self, other):
+        return lambda *args, **kwargs: not other(*args, **kwargs)
+
+class negate(): ...
+del negate
+
+negate = Negate()
+
+# =============================================================================================
+
+def print_id(x):
+    print(x)
+    return x

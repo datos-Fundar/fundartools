@@ -29,6 +29,7 @@ def to_csv_patch(self, path_or_buf, **kwargs):
 
 pandas_.DataFrame.to_csv = to_csv_patch
 setattr(Series_, 'has', lambda self, x: self.map(lambda y: x in y))
+setattr(Series_, 'has_safe', lambda self, x: self.map(lambda y: False if '__contains__' not in dir(y) else x in y))
 
 def __getattr__(name):
     return getattr(pandas_, name)

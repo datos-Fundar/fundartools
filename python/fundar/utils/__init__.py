@@ -3,6 +3,7 @@ import os
 from operator import contains
 from functools import reduce, partial
 from typing import NewType, Callable, TypeVar, Protocol, Generic
+from datetime import datetime
 
 # =============================================================================================
 
@@ -301,3 +302,14 @@ negate = Negate()
 def print_id(x):
     print(x)
     return x
+
+# =============================================================================================
+
+class now:
+    # noinspection PyMethodParameters
+    @staticproperty
+    def string():
+        return datetime.now().strftime('%d-%m-%y_%H%M%S')
+    
+    def format(fmt):
+        return datetime.now().strftime(fmt)

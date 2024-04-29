@@ -69,6 +69,27 @@ first = partial(apply_to, i=0)
 
 # https://hackage.haskell.org/package/base-4.19.1.0/docs/Control-Arrow.html#v:second
 second = partial(apply_to, i=1)
+
+A = TypeVar('A')
+def group_by(predicate: Callable[[A, A], bool], elements: list[A]) -> list[list[A]]:
+    if not elements:
+        return []
+    
+    def go(groups, x):
+        if not groups:
+            return [[x]]
+        
+        last_group = groups[-1]
+        if predicate(x, last_group[0]):
+            groups[-1] = last_group + [x]
+        else:
+            groups.append([x])
+        return groups
+
+    groups = []
+    for element in elements:
+        groups = go(groups, element)
+    return groups
     
 # =============================================================================================
 

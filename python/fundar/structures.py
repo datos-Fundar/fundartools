@@ -1,5 +1,5 @@
 from collections.abc import Iterator
-from .utils import callx
+from .utils import callx, flatten
 from functools import reduce, wraps
 from operator import eq as equals, add
 
@@ -105,6 +105,9 @@ class List(list):
         Devuelve el número de elementos únicos en la lista.
         """
         return len(self.unique())
+    
+    def flatten(self):
+        return List(flatten(self))
     
     @wraps(list.sort)
     def sort(self, **kwargs):

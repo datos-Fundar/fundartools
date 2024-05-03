@@ -13,11 +13,22 @@ class List(list):
         def __call__(self):
             return int(self)
 
-    def map(self, f):
+    def map(*args):
         """
         Versión eager de map.
         """
-        return List(map(f, self))
+        n = len(args)
+
+        if n not in (1,2):
+            raise ValueError(f'Expected 1 or 2 arguments, got {n}.')
+
+        if n == 2:
+            self, f = args
+            return List(map(f, self))
+        
+        if n == 1:
+            f = args[0]
+            return lambda xs: List.map(xs, f)
 
     def filter(self, f):
         """
@@ -221,6 +232,14 @@ class Dict(dict):
     
 
 class bijection:
+    @classmethod
+    def from_list(cls, xs):
+        if isinstance(xs, list):
+            if all(map(lambda x: isinstance(x, tuple) and len(x) == 2, xs)):
+                return cls(dict(xs))
+            raise TypeError
+        raise TypeError
+                
     def __init__(self, d: None|dict = None):
         if d:
             self.forward = d

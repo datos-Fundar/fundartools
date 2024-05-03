@@ -314,6 +314,12 @@ from inspect import signature
 def argumentsOf(f): return len(signature(f).parameters)
 
 def curry(f: callable):
+    """
+    Currifica una funcion de der. a izq.
+    Por ejemplo:
+
+    curry(lambda a,b: a/b) === lambda b: lambda a: a/be
+    """
     def curried(*args):
         if len(args) == argumentsOf(f): return f(*args)
         else: return lambda x: curried(x, *args)

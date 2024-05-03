@@ -90,6 +90,18 @@ def group_by(predicate: Callable[[A, A], bool], elements: list[A]) -> list[list[
     for element in elements:
         groups = go(groups, element)
     return groups
+
+def _flatten(lst, flat_list):
+    for item in lst:
+        if isinstance(item, list):
+            _flatten(item, flat_list)
+        else:
+            flat_list.append(item)
+
+    return flat_list
+
+def flatten(nested_list):
+    return _flatten(nested_list, [])
     
 # =============================================================================================
 

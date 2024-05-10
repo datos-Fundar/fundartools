@@ -307,3 +307,118 @@ class bijection:
         output += (' '*(offset-1)) + ')'
         
         return output
+
+# ======================================================================================================================
+
+def get_type_name(_type: type) -> str:
+    if _type is None:
+        return 'None'
+    elif hasattr(_type, '__name__'):
+        return _type.__name__
+    else:
+        return str(_type)
+
+class InitFromAnnotationsMeta(type):
+    def __new__(cls, name, bases, dct):
+        annotations = dct.get('__annotations__', {})
+
+        dct['fields'] = [name for name in annotations]
+
+        dct['not_null_fields'] = property(lambda self: [name for name in annotations if getattr(self, name) is not None])
+
+        if annotations:
+            parameters = [f'self'] + [f'{name}: {get_type_name(t)}' for name, t in annotations.items()]
+            init_body = '\n    '.join([f'self.{name} = {name}' for name in annotations])
+
+            # Default __init__
+            exec_globals = globals().copy()
+            default_init_definition = f"def default_init({', '.join(parameters)}):\n    {init_body}"
+            exec(default_init_definition, exec_globals)
+            default_init = exec_globals['default_init']
+
+            # Is __init__ already defined?
+            original_init = dct.get('__init__')
+
+            if original_init:
+                # Create a new __init__ that first calls the default and then the original
+                def __init__(self, *args, **kwargs):
+                    default_init(self, *args, **kwargs)
+                    original_init(self, *args, **kwargs)
+                dct['__init__'] = __init__
+            else:
+                dct['__init__'] = default_init
+
+            # from_dict
+            from_dict_body = ', '.join([f'data.get("{name}", None)' for name in annotations])
+            from_dict_definition = f"@classmethod\ndef from_dict(cls, data):\n    return cls({from_dict_body})"
+            exec(from_dict_definition, globals(), dct)
+
+            # to_dict
+            to_dict_body = ', '.join([f'"{name}": self.{name}' for name in annotations])
+            to_dict_definition = f"def to_dict(self):\n    return {{{to_dict_body}}}"
+            exec(to_dict_definition, globals(), dct)
+
+            # Define equals method for class comparison
+            #  def equals(self, other):
+            #      if not isinstance(other, self.__class__):
+            #          return False
+            #      return all(
+            #          (getattr(self, attr).equals(getattr(other, attr)) if isinstance(getattr(self, attr), AutoInit) else getattr(self, attr) == getattr(other, attr))
+            #          for attr in annotations
+            #      )
+            #  dct['equals'] = equals
+
+            # diff between objects. Similar to equals, but returns a list of the field names that differ.
+            def diff(self, other):
+                if not isinstance(other, self.__class__):
+                    return list(annotations.keys())
+                return [attr for attr in annotations if getattr(self, attr) != getattr(other, attr)]
+            dct['diff'] = diff
+
+            # Equals from diff == []
+            def equals(self, other):
+                return self.diff(other) == []
+            dct['equals'] = equals
+
+            if not '__str__' in dct:
+                def __str__(self):
+                    return f"{name}({', '.join([f'{name}={getattr(self, name)!r}' for name in annotations])})"
+                dct['__str__'] = __str__
+
+            if not '__repr__' in dct:
+                def __repr__(self):
+                    return f"{name}({', '.join([f'{name}={getattr(self, name)!r}' for name in annotations])})"
+                dct['__repr__'] = __repr__
+
+            @classmethod
+            def from_other(cls, other, **kwargs):
+                return cls.from_dict(**(other.to_dict()|kwargs))
+            
+            dct['from_other'] = from_other
+
+            def update(self, other_or_dict, **kwargs):
+                if isinstance(other_or_dict, dict):
+                    keyset = set(other_or_dict)
+                    annotation_set = set(annotations)
+                    if not keyset.issubset(annotation_set) or not keyset == annotation_set:
+                        raise ValueError(f"Invalid keys for {name}: {keyset - annotation_set}")
+                    
+                    for key, value in other_or_dict.items():
+                        if value is not None:
+                            setattr(self, key, value)
+                    
+                    return self
+                else:
+                    return self.update(other_or_dict.to_dict(), **kwargs)
+            
+            dct['update'] = update
+            dct['__lshift__'] = update
+
+        return super().__new__(cls, name, bases, dct)
+    
+class AutoInit(metaclass=InitFromAnnotationsMeta):
+    pass
+
+class Struct: ...
+del Struct
+Struct: type = AutoInit

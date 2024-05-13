@@ -352,3 +352,32 @@ class now:
     
     def format(fmt):
         return datetime.now().strftime(fmt)
+
+# ============================================================================================
+
+class MethodMapping(dict):
+    """Diccionario que asocia claves a funciones. Sirve para crear selectores de estrategia."""
+
+    def __register__(self, key, f):
+        self[key] = f
+        return f
+
+    def register(self, key_or_alias):
+        match key_or_alias:
+            case alias if isinstance(key_or_alias, str):
+                return lambda f: self.__register__(alias, f)
+            case function if callable(key_or_alias):
+                return self.__register__(function.__name__, function)
+            
+    def __getattr__(self, k):
+        return self[k]
+
+# ============================================================================================   
+
+def throw(ex):
+    raise ex
+
+class Placeholder:    
+    def __init_subclass__(cls) -> None:
+        cls.__init__ = lambda *_, **__: throw(TypeError(f"'{cls.__name__}' is a placeholder and cannot be instantiated."))
+        cls.__init_subclass__ = lambda *_, **__: throw(TypeError(f"'{cls.__name__}' is a placeholder and cannot be subtyped."))

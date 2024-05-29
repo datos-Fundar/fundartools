@@ -1,5 +1,6 @@
+from typing import Callable, Any
 from collections.abc import Iterator
-from .utils import callx, flatten
+from .utils import callx, flatten, access
 from functools import reduce, wraps
 from operator import eq as equals, add
 
@@ -12,6 +13,10 @@ class List(list):
     class _size(int):
         def __call__(self):
             return int(self)
+        
+    @classmethod
+    def of(cls, *args):
+        return List(args)
 
     def map(*args):
         """
@@ -57,6 +62,12 @@ class List(list):
             return self.index(x)
         except ValueError:
             return default
+        
+    def enumerate(self):
+        return List(enumerate(self))
+    
+    def which(self, condition: Callable[Any, bool]):
+        return self.map(condition).enumerate().filter(access(1)).map(access(0))
     
     def zip(self, *args):
         """
@@ -103,6 +114,12 @@ class List(list):
             error_str += 's' if non_callables > 1 else ''
             error_str += ' in the list.'
             raise TypeError(error_str)
+    
+    def _chain_together(self) -> callable:
+        return List.reduce(self, lambda f, g: (lambda *_args, **_kwargs: g(f(*_args, **_kwargs))))
+
+    def chain(self, *args, **kwargs):
+        return List._chain_together(self)(*args, **kwargs)
         
     def unique(self, comparator=equals):
         """

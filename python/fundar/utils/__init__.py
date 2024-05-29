@@ -54,6 +54,9 @@ def identity_single_argument(x):
 def identity(*args):
     return args
 
+def is_empty(x):
+    return False if x else True
+
 def _apply_to(f, i, x):
     return type(x)(f(y) if (j == i) else y for j,y in enumerate(x))
 

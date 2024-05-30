@@ -1,8 +1,38 @@
-from typing import Callable, Any
+from typing import Callable, Any, ClassVar
 from collections.abc import Iterator
 from .utils import callx, flatten, access
 from functools import reduce, wraps
 from operator import eq as equals, add
+
+class slicer:
+    def __init__(self, stop, start=0, step=1):
+        self._slice = slice(start, stop, step)
+
+    @property
+    def start(self) -> Any:
+        return self._slice.start
+    
+    @property
+    def step(self) -> Any:
+        return self._slice.step
+    
+    @property
+    def stop(self) -> Any:
+        return self._slice.stop
+    
+    def __eq__(self, value: object, /) -> bool:
+        return self._slice.__eq__(value)
+    
+    __hash__: ClassVar[None]  # type: ignore[assignment]
+
+    def indices(self, *args) -> tuple[int, int, int]:
+        return self._slice.indices(*args)
+    
+    def __call__(self, sliceable):
+        return sliceable.__getitem__(self._slice)
+    
+    def __repr__(self):
+        return repr(self._slice)
 
 class List(list):
     """
@@ -66,7 +96,7 @@ class List(list):
     def enumerate(self):
         return List(enumerate(self))
     
-    def which(self, condition: Callable[Any, bool]):
+    def which(self, condition: Callable[..., bool]):
         return self.map(condition).enumerate().filter(access(1)).map(access(0))
     
     def zip(self, *args):

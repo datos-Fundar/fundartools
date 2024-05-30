@@ -420,8 +420,15 @@ def search_upwards(name: str, start_path: str, max_up_depth: int, max_down_depth
     
     return search_upwards(name, parent_dir, max_up_depth, max_down_depth, current_up_depth + 1)
 
-def find_file(name: str, path: str, max_up_depth: int=3, max_down_depth: int=3):
+def find_file(name: str, path: str, max_up_depth: int=3, max_down_depth: int=3, throw_error: bool=False) -> Optional[str]:
     result = search_downwards(name, path, max_down_depth)
     if result:
         return result
-    return search_upwards(name, path, max_up_depth, max_down_depth)
+    
+
+    result = search_upwards(name, path, max_up_depth, max_down_depth)
+    if result:
+        return result
+    
+    if throw_error:
+        raise FileNotFoundError(f"File '{name}' not found.")

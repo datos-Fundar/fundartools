@@ -2,7 +2,7 @@ import io
 import os
 from operator import contains
 from functools import reduce, partial
-from typing import NewType, Callable, TypeVar, Protocol, Generic
+from typing import NewType, Callable, TypeVar, Protocol, Generic, Optional
 from datetime import datetime
 
 # =============================================================================================
@@ -384,3 +384,44 @@ class Placeholder:
     def __init_subclass__(cls) -> None:
         cls.__init__ = lambda *_, **__: throw(TypeError(f"'{cls.__name__}' is a placeholder and cannot be instantiated."))
         cls.__init_subclass__ = lambda *_, **__: throw(TypeError(f"'{cls.__name__}' is a placeholder and cannot be subtyped."))
+
+# ============================================================================================
+
+def search_downwards(name: str, start_path: str, max_depth: int, current_depth: int=0) -> Optional[str]:
+    if current_depth > max_depth:
+        return None
+    
+    for root, dirs, files in os.walk(start_path):
+        if name in files or name in dirs:
+            return os.path.join(root, name)
+        
+        if current_depth + 1 > max_depth:
+            break
+        
+        for d in dirs:
+            result = search_downwards(name, os.path.join(root, d), max_depth, current_depth + 1)
+            if result:
+                return result
+
+    return None
+
+def search_upwards(name: str, start_path: str, max_up_depth: int, max_down_depth: int, current_up_depth: int=0) -> Optional[str]:
+    if current_up_depth > max_up_depth:
+        return None
+    
+    result = search_downwards(name, start_path, max_down_depth)
+    if result:
+        return result
+    
+    parent_dir = os.path.abspath(os.path.join(start_path, '..'))
+    
+    if parent_dir == start_path:
+        return None
+    
+    return search_upwards(name, parent_dir, max_up_depth, max_down_depth, current_up_depth + 1)
+
+def find_file(name: str, path: str, max_up_depth: int=3, max_down_depth: int=3):
+    result = search_downwards(name, path, max_down_depth)
+    if result:
+        return result
+    return search_upwards(name, path, max_up_depth, max_down_depth)

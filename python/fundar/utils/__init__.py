@@ -196,7 +196,7 @@ def map_value(value, istart, istop, ostart, ostop):
 
 # =============================================================================================
 
-def load_from_str_or_buf(input_data):
+def load_from_str_or_buf(input_data) -> io.BytesIO:
     match input_data:
         case string if isinstance(input_data, str):
             if not os.path.exists(input_data):
@@ -422,13 +422,29 @@ def search_upwards(name: str, start_path: str, max_up_depth: int, max_down_depth
 
 def find_file(name: str, path: str, max_up_depth: int=3, max_down_depth: int=3, throw_error: bool=False) -> Optional[str]:
     result = search_downwards(name, path, max_down_depth)
+
     if result:
+        # get absolute path
+        result = os.path.abspath(result)
         return result
     
 
     result = search_upwards(name, path, max_up_depth, max_down_depth)
     if result:
+        # get absolute path
+        result = os.path.abspath(result)
         return result
     
     if throw_error:
         raise FileNotFoundError(f"File '{name}' not found.")
+    
+def split_path_recursively(path: str) -> list:
+    if path == os.path.sep:
+        return []
+    
+    head, tail = os.path.split(path)
+    
+    if head == '' or head == path:
+        return [tail]
+    
+    return split_path_recursively(head) + [tail]

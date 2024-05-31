@@ -167,6 +167,9 @@ class List(list):
     def flatten(self):
         return List(flatten(self))
     
+    def at(self, i):
+        return self[i]
+    
     @wraps(list.sort)
     def sort(self, **kwargs):
         self = List(sorted(self, **kwargs))

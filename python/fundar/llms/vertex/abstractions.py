@@ -5,7 +5,7 @@ from proto.marshal.collections.repeated import RepeatedComposite
 from google.cloud.aiplatform_v1beta1.types.content import SafetyRating
 from .wrappers import SafetySettings, SystemPrompt, GenerationConfigWrapper
 from fundar import json
-from fundar.structures import List
+from fundar.structures import lista
 import os.path
 from google.api_core.exceptions import ServiceUnavailable
 from vertexai.generative_models._generative_models import (

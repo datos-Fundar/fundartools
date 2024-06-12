@@ -143,7 +143,8 @@ class lista(list):
         Devuelve el índice de la primera ocurrencia de x tal que f(x) == True, si existe, o -1 en caso contrario.
         Para obtener el índice de un objeto particular, usar list.index.
         """
-        return self.index(self.find(f))
+        result = self.find(f, not_found=None)
+        return -1 if result is None else self.index(result) 
     
     def apply(*args, **kwargs):
         """
@@ -358,6 +359,12 @@ class bijection:
         if key in self.forward:
             return self.forward[key]
         return self.backward[key]
+
+    def get(self, key, default=None):
+        if not (key in self.forward or key in self.backward):
+            return default
+
+        return self[key]
     
     def __contains__(self, key):
         return key in self.forward or key in self.backward

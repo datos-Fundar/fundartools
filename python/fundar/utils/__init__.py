@@ -105,6 +105,28 @@ def _flatten(lst, flat_list):
 
 def flatten(nested_list):
     return _flatten(nested_list, [])
+
+
+def groupby(predicate, elements):
+    match_count = 0
+    
+    for x in elements:
+        if predicate(x):
+            match_count += 1
+    
+    left = [None for _ in range(match_count)]
+    right = [None for _ in range(len(elements) - match_count)]
+
+    i, j = 0, 0
+    for x in elements:
+        if predicate(x):
+            left[i] = x
+            i += 1
+        else:
+            right[j] = x
+            j += 1
+    
+    return left, right
     
 # =============================================================================================
 

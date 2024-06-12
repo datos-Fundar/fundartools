@@ -66,6 +66,15 @@ class lista(list):
         if n == 1:
             f = args[0]
             return lambda xs: lista.map(xs, f)
+        
+    def reverse(self):
+        return list(reversed(self))
+    
+    def unzip(self, *args):
+        return list(zip(*self, *args))
+    
+    def flatmap(self, f):
+        return list([item for sublist in self.map(f) for item in sublist])
 
     def filter(self, f):
         """

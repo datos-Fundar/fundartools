@@ -390,7 +390,7 @@ class bijection:
         return len(self.forward)
     
     def __iter__(self):
-        return iter(self.forward)
+        return iter(self.forward.items())
     
     @staticmethod
     def __format__(k,v, align='left'):

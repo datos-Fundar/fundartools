@@ -229,8 +229,8 @@ def load_from_str_or_buf(input_data) -> io.BytesIO:
             with open(string, 'rb') as file:
                 return io.BytesIO(file.read())
             
-        case isinstance(input_data, (io.BytesIO, io.StringIO)):
-            return input_data
+        case buffer if isinstance(input_data, (io.BytesIO, io.StringIO)):
+            return buffer
         case _:
             raise TypeError("Unsupported input type. Please provide a valid file path or buffer.")
         

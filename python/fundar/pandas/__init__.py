@@ -20,7 +20,8 @@ formato_fundar = {
     'quotechar': '"',
     'lineterminator': '\n',
     'decimal': '.',
-    'index': False
+    'index': False,
+    'float_format': '%.5f'
 }
 
 @wraps(original_to_csv)

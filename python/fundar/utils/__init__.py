@@ -136,8 +136,9 @@ class staticproperty(property):
     def __get__(self, cls, owner):
         return staticmethod(self.fget).__get__(None, owner)()
 
-class Singleton(type):
+class SingletonMeta(type):
     """
+    Fuente: github.com/datos-Fundar/fundartools
     Metaclase que implementa el patrón de singleton.
     Las clases que la heredan no pueden ser instanciadas más de una vez.
     Provee un método 'get_instance' que es heredado, el cual:
@@ -159,6 +160,10 @@ class Singleton(type):
             instance = super().__call__(*args, **kwargs)
             cls._instances[cls] = instance
         return cls._instances[cls]
+    
+class Singleton(metaclass=SingletonMeta):
+    def __init_subclass__(cls) -> None:
+        cls.instance = classproperty(lambda _: cls.get_instance())
     
 # =============================================================================================
 

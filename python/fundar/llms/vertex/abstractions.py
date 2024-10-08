@@ -71,7 +71,7 @@ class FewShotPrompt(Chat):
     
     @classmethod
     def from_json(cls, path):
-        d = json.load('manager_fewshot.json')
+        d = json.load(path)
         return cls.from_records(d)
 
 

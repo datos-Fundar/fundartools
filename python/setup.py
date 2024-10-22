@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-   version="1.0.6",
+   version="1.0.7",
    name="fundar",
    author="Fundar",
    description="Private Python library.",
